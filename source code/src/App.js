@@ -16,7 +16,7 @@ const App = () => {
     setAudioUrl(null);
     // Send data to your Lambda function
     try {
-      const response = await fetch('https://1ssyef6jv7.execute-api.eu-west-3.amazonaws.com/test/polly-endpoint', {  // Replace with your Lambda endpoint
+      const response = await fetch(process.env.AG_ENDPOINT, {  // Replace with your Lambda endpoint
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

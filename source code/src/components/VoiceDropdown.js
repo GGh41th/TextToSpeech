@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import AWS from 'aws-sdk';
 
+// Change the region accordingly , and keep in mind that some regions doesn't support all engines , consult the documentation.
 const REGION = "eu-west-3";
 
 AWS.config.update({
     region: REGION,
     credentials: new AWS.CognitoIdentityCredentials({
-      IdentityPoolId: "eu-west-3:0b032d28-f5c6-404f-bb93-9bd1b23ec2c8", 
+      IdentityPoolId: process.env.COGNITO_ID_POOL, 
     }),
   });
 

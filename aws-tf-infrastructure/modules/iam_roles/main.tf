@@ -1,3 +1,4 @@
+# create an iam role that the lambda function could use in order to interact with Polly.
 resource "aws_iam_role" "lambda_role" {
     name = "s3-read-role"
 
@@ -13,13 +14,9 @@ resource "aws_iam_role" "lambda_role" {
     })
 }
 
-resource "aws_iam_role_policy_attachment" "s3_read_only_attachment" {
-    role       = aws_iam_role.lambda_role.name
-    policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
-}
 
 
-# Create a Policy for full Polly access
+# Create a Policy that grants a full polly access
 resource "aws_iam_policy" "polly_full_access" {
     name        = "lambda-polly-full-access"
     description = "Policy to allow Lambda full access to Amazon Polly"
@@ -43,6 +40,17 @@ resource "aws_iam_role_policy_attachment" "attach_polly_policy_to_role" {
 }
 
 
+
+
+# Add a policy to the lambda role that grants it a read only access to s3 in order to be able to fetch 
+# the layers and the code
+
+resource "aws_iam_role_policy_attachment" "s3_read_only_attachment" {
+    role       = aws_iam_role.lambda_role.name
+    policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+}
+
+# A role that will be assigned to the website guest users
 resource "aws_iam_role" "cognito_identity_pool_role" {
     name               = "cognito_identity_pool_role"
     assume_role_policy = jsonencode({
@@ -68,7 +76,7 @@ resource "aws_iam_role" "cognito_identity_pool_role" {
 }
 
 
-
+# a policy to grand read only acess to the guest users
 resource "aws_iam_policy" "cognito_polly_read_only_policy" {
     name        = "CognitoPollyReadOnlyPolicy"
     description = "Policy for Cognito users to access Polly with read-only permissions"
@@ -86,6 +94,7 @@ resource "aws_iam_policy" "cognito_polly_read_only_policy" {
     })
 }
 
+# attaching the policy to the role
 resource "aws_iam_role_policy_attachment" "cognito_polly_policy_attachment" {
     role       = aws_iam_role.cognito_identity_pool_role.name
     policy_arn = aws_iam_policy.cognito_polly_read_only_policy.arn
@@ -94,7 +103,7 @@ resource "aws_iam_role_policy_attachment" "cognito_polly_policy_attachment" {
 
 
 
-# Policy for allowing Cognito to manage identities
+# Policy for allowing Cognito to manage identities , this will enable the guest user to get his temporary credentials
 resource "aws_iam_policy" "cognito_identity_pool_policy" {
   name        = "cognito-identity-pool-policy"
   description = "Policy for Cognito Identity Pool to manage identities"
@@ -105,12 +114,12 @@ resource "aws_iam_policy" "cognito_identity_pool_policy" {
       {
         Effect = "Allow",
         Action = [
-          "cognito-identity:GetId",
-          "cognito-identity:GetCredentialsForIdentity",
-          "cognito-identity:DescribeIdentity",
-          "cognito-identity:ListIdentities",
-          "cognito-identity:LookupDeveloperIdentity",
-          "cognito-sync:*"
+            "cognito-identity:GetId",
+            "cognito-identity:GetCredentialsForIdentity",
+            "cognito-identity:DescribeIdentity",
+            "cognito-identity:ListIdentities",
+            "cognito-identity:LookupDeveloperIdentity",
+            "cognito-sync:*"
         ],
         Resource = "*"
       }
